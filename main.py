@@ -70,11 +70,13 @@ print()
 print(f"CLIENTES REJEITADOS ({len(clientes_invalidos)})")
 
 for item in clientes_invalidos:
-    print(
-        f"  ID {item['registro']['id']} - "
-        f"{', '.join(item['erros'])}"
-    )
+    registro = item["registro"]
+    erros = ", ".join(item["erros"])
 
+    print(
+        f"  ID {registro['id']} - "
+        f"{registro['nome']}: {erros}"
+    )
 print()
 
 print(
