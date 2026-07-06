@@ -3,10 +3,13 @@ from validador import validar_cliente, validar_transacao, separar_registros
 from transformador import transformar_clientes, transformar_transacoes
 from processador import total_aprovado, media_idade, clientes_por_cidade
 
+
 print("=== DataProcessor CLI ===")
 print()
 
-# LEITURA
+
+#todos os dados ficam carregados na memória.
+
 clientes_raw = carregar_clientes("data/clientes.csv")
 transacoes_raw = carregar_transacoes("data/transacoes.csv")
 config = carregar_config("data/config.json")
@@ -17,13 +20,19 @@ print(f"  transacoes.csv ........... {len(transacoes_raw)} registros")
 print("  config.json .............. OK")
 print()
 
-# VALIDAÇÃO
+
+
+# Cada cliente é enviado para validar_cliente e vai enviar like two listas de green e red
+
 clientes_validos, clientes_invalidos = separar_registros(
     clientes_raw,
     validar_cliente
 )
 
-ids_validos = {c["id"] for c in clientes_validos}
+
+
+ids_validos = {c["id"] for c in clientes_validos} #valida a trsansacao criando um conjunto de idds
+
 
 transacoes_validas, transacoes_invalidas = separar_registros(
     transacoes_raw,
@@ -37,7 +46,6 @@ print(f"  Clientes válidos: {len(clientes_validos)} / {len(clientes_raw)}")
 print(f"  Transações válidas: {len(transacoes_validas)} / {len(transacoes_raw)}")
 print()
 
-# TRANSFORMAÇÃO
 clientes = transformar_clientes(clientes_validos)
 transacoes = transformar_transacoes(transacoes_validas)
 
@@ -46,14 +54,22 @@ print(f"  {len(clientes)} clientes normalizados")
 print(f"  {len(transacoes)} transações normalizadas")
 print()
 
-# MÉTRICAS
+
+
+# Calcula info apenas com registros válido, soma as transações e calcula a media de idade alem decontar quantos cli p cdd.
+
 total = total_aprovado(transacoes)
 media = media_idade(clientes)
 por_cidade = clientes_por_cidade(clientes)
 
-# RELATÓRIO FINAL
+
+# Exibe todas as informações processadas pelo sistema.
+
 print("=== RELATÓRIO FINAL — DataProcessor ===")
 print()
+
+
+# Mostra apenas os clientes aprovados na validação.
 
 print(
     f"CLIENTES PROCESSADOS ({len(clientes)} válidos de {len(clientes_raw)})"
@@ -67,6 +83,10 @@ for c in clientes:
 
 print()
 
+
+
+# Mostra os clientes inválidos e o motivo da rejeição.
+
 print(f"CLIENTES REJEITADOS ({len(clientes_invalidos)})")
 
 for item in clientes_invalidos:
@@ -77,7 +97,10 @@ for item in clientes_invalidos:
         f"  ID {registro['id']} - "
         f"{registro['nome']}: {erros}"
     )
+
 print()
+
+# Exibe apenas as transações aprovadas na validação.
 
 print(
     f"TRANSAÇÕES PROCESSADAS "
@@ -92,6 +115,8 @@ for t in transacoes:
 
 print()
 
+# Exibe as transações inválidas e seus respectivos erros.
+
 print(f"TRANSAÇÕES REJEITADAS ({len(transacoes_invalidas)})")
 
 for item in transacoes_invalidas:
@@ -101,6 +126,9 @@ for item in transacoes_invalidas:
     )
 
 print()
+
+
+# Mostra os cálculos realizados durante o processamento.
 
 print("MÉTRICAS")
 print(f"  Total aprovado: R$ {total:.2f}")

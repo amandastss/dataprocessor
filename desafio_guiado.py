@@ -30,7 +30,7 @@ for cliente in clientes:
         f'cidade: "{cliente["cidade"]}"'
     )
 
-    transformado = transformar_cliente(cliente)
+    transformado = transformar_cliente(cliente) #o usu ve o antes e o dps da transformacap
 
     print()
     print("DEPOIS:")

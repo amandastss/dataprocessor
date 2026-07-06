@@ -1,6 +1,4 @@
 
-
-
 def total_aprovado(transacoes):
     return sum(t["valor"] for t in transacoes if t.get("status") == "aprovado")
 
