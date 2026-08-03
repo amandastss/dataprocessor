@@ -1,4 +1,4 @@
-from dataprocessor.transformador import transformar_cliente
+from dataprocessor.core.transformador import transformar_cliente
 
 clientes = [
     {

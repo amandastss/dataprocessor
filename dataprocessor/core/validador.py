@@ -8,9 +8,7 @@ def email_valido(email):
     if "@" not in email:
         return False
     partes = email.strip().split("@")
-    if len(partes) != 2 or "." not in partes[1]:
-        return False
-    return True
+    return not (len(partes) != 2 or "." not in partes[1])
 
 
 def idade_valida(idade):

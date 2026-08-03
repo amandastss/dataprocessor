@@ -1,7 +1,8 @@
-from .leitor import carregar_clientes, carregar_transacoes, carregar_config
-from .validador import validar_cliente, validar_transacao, separar_registros
-from .transformador import transformar_clientes, transformar_transacoes
-from .processador import media_idade, total_aprovado
+from .core.processador import media_idade, total_aprovado
+from .core.transformador import transformar_clientes, transformar_transacoes
+from .core.validador import separar_registros, validar_cliente, validar_transacao
+from .leitor import carregar_clientes, carregar_config, carregar_transacoes
+
 
 def executar_pipeline(caminho_clientes, caminho_transacoes, caminho_config):
     clientes_raw = carregar_clientes(caminho_clientes)
