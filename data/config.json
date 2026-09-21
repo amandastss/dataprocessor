@@ -1,18 +1,5 @@
-
 {
-  "categorias_validas": [
-    "eletronicos",
-    "roupas",
-    "alimentacao",
-    "livros",
-    "moveis",
-    "saude",
-    "esportes",
-    "beleza",
-    "automotivo",
-    "pet",
-    "jogos"
-  ],
+  "categorias_validas": ["eletronicos", "roupas", "alimentacao", "livros"],
   "status_validos": ["aprovado", "pendente", "recusado"],
   "valor_minimo": 0
 }

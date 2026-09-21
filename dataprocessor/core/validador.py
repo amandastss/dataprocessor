@@ -1,78 +1,75 @@
-
 from datetime import date
+from collections.abc import Callable, Iterable
+from typing import Any
+
+from .entidades import Cliente, Transacao
+from .resultados import RegistroInvalido
 
 
-def email_valido(email):
+def email_valido(email: str | None) -> bool:
     if not email or not email.strip():
         return False
-    if "@" not in email:
-        return False
     partes = email.strip().split("@")
-    return not (len(partes) != 2 or "." not in partes[1])
+    return len(partes) == 2 and bool(partes[0]) and "." in partes[1]
 
 
-def idade_valida(idade):
-    if idade is None:
-        return False
-    return 0 < idade < 150
+def idade_valida(idade: int | None) -> bool:
+    return idade is not None and 0 < idade < 150
 
 
-def data_valida(texto):
-    if not texto:
+def data_valida(texto_data: str | None) -> bool:
+    if not texto_data:
         return False
     try:
-        date.fromisoformat(texto)
-        return True
+        date.fromisoformat(texto_data)
     except ValueError:
         return False
+    return True
 
 
-def valor_valido(valor, minimo=0):
-    if valor is None:
-        return False
-    return valor > minimo
-
-
-def validar_cliente(cliente, **kwargs):
+def validar_cliente(cliente: Cliente) -> list[str]:
     erros = []
-    if not cliente.get("nome", "").strip():
+    if not cliente.nome.strip():
         erros.append("nome vazio")
-    if not email_valido(cliente.get("email")):
-        erros.append(f"email inválido: '{cliente.get('email')}'")
-    if not idade_valida(cliente.get("idade")):
-        erros.append(f"idade inválida: {cliente.get('idade')}")
-    if not data_valida(cliente.get("data_cadastro")):
-        erros.append(f"data inválida: '{cliente.get('data_cadastro')}'")
+    if not email_valido(cliente.email):
+        erros.append(f"email inválido: '{cliente.email}'")
+    if not idade_valida(cliente.idade):
+        erros.append(f"idade inválida: {cliente.idade}")
+    if not data_valida(cliente.data_cadastro):
+        erros.append(f"data inválida: '{cliente.data_cadastro}'")
     return erros
 
 
-def validar_transacao(transacao, ids_clientes=None, config=None):
-    if ids_clientes is None:
-        ids_clientes = set()
-    if config is None:
-        config = {}
-
+def validar_transacao(
+    transacao: Transacao,
+    ids_clientes: set[int | None],
+    config: dict[str, Any],
+) -> list[str]:
     erros = []
-    if transacao.get("cliente_id") not in ids_clientes:
-        erros.append(f"cliente_id inexistente: {transacao.get('cliente_id')}")
-    if not valor_valido(transacao.get("valor"), config.get("valor_minimo", 0)):
-        erros.append(f"valor inválido: {transacao.get('valor')}")
-    categorias = config.get("categorias_validas", [])
-    if transacao.get("categoria") not in categorias:
-        erros.append(f"categoria inválida: '{transacao.get('categoria')}'")
-    status_validos = config.get("status_validos", [])
-    if transacao.get("status") not in status_validos:
-        erros.append(f"status inválido: '{transacao.get('status')}'")
+    if transacao.cliente_id not in ids_clientes:
+        erros.append(f"cliente_id inexistente: {transacao.cliente_id}")
+
+    valor_minimo = config.get("valor_minimo", 0)
+    if transacao.valor is None or transacao.valor <= valor_minimo:
+        erros.append(f"valor inválido: {transacao.valor}")
+    if transacao.categoria not in config.get("categorias_validas", []):
+        erros.append(f"categoria inválida: '{transacao.categoria}'")
+    if transacao.status not in config.get("status_validos", []):
+        erros.append(f"status inválido: '{transacao.status}'")
     return erros
 
 
-def separar_registros(registros, funcao_validar, **kwargs):
+def separar_registros(
+    registros: Iterable[Any],
+    funcao_validar: Callable[..., list[str]],
+    **kwargs: Any,
+) -> tuple[list[Any], list[RegistroInvalido]]:
     validos = []
     invalidos = []
     for registro in registros:
         erros = funcao_validar(registro, **kwargs)
         if erros:
-            invalidos.append({"registro": registro, "erros": erros})
+            invalidos.append(RegistroInvalido(registro, tuple(erros)))
         else:
             validos.append(registro)
     return validos, invalidos
