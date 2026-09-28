@@ -1,8 +1,13 @@
 from pathlib import Path
 
-from ..infra.fontes import FonteDadosArquivos
+from ..infra.fontes import fonte_a_partir_de_caminhos
 from ..infra.relatorios import criar_gerador
 from ..services.processamento import executar_processamento
+
+
+def processar_caminhos(caminho_clientes, caminho_transacoes, caminho_config):
+    fonte = fonte_a_partir_de_caminhos(caminho_clientes, caminho_transacoes, caminho_config)
+    return executar_processamento(fonte)
 
 
 def processar():
@@ -16,25 +21,37 @@ def processar():
         "Caminho do JSON de config [data/config.json]: "
     ).strip() or "data/config.json"
 
-    fonte = FonteDadosArquivos(
-        caminho_clientes,
-        caminho_transacoes,
-        caminho_config,
-    )
-    resultado = executar_processamento(fonte)
+    try:
+        resultado = processar_caminhos(
+            caminho_clientes,
+            caminho_transacoes,
+            caminho_config,
+        )
+    except (OSError, ValueError, KeyError) as erro:
+        print(f"[ERRO] Não foi possível processar: {erro}")
+        return None
+
     print(f"Clientes válidos: {len(resultado.clientes)}")
     print(f"Transações válidas: {len(resultado.transacoes)}")
     return resultado
 
 
 def exibir_relatorio(resultado):
+    formatos = {"texto", "json", "csv"}
     formato = input("Formato (texto/json/csv) [texto]: ").strip() or "texto"
+    if formato not in formatos:
+        print(f"Formato inválido: '{formato}'.")
+        return
     gerador = criar_gerador(formato)
     print(gerador.render(resultado))
 
 
 def salvar_relatorio(resultado):
     formato = input("Formato (texto/json/csv) [texto]: ").strip() or "texto"
+    if formato not in {"texto", "json", "csv"}:
+        print(f"Formato inválido: '{formato}'.")
+        return
+
     gerador = criar_gerador(formato)
     relatorio = gerador.render(resultado)
 
@@ -62,18 +79,24 @@ def menu_principal():
 
         opcao = input("Escolha uma opção: ").strip()
 
+        if opcao not in {"1", "2", "3", "4"}:
+            print(f"Opção inválida: '{opcao}'. Escolha 1, 2, 3 ou 4.")
+            continue
+
         if opcao == "1":
-            resultado = processar()
+            novo_resultado = processar()
+            if novo_resultado is not None:
+                resultado = novo_resultado
         elif opcao == "2":
             if resultado is None:
-                print("Nenhum processamento realizado.")
+                print("Nenhum dado processado ainda. Escolha a opção 1 primeiro.")
                 continue
             exibir_relatorio(resultado)
         elif opcao == "3":
             break
         elif opcao == "4":
             if resultado is None:
-                print("Nenhum processamento realizado.")
+                print("Nenhum dado processado ainda. Escolha a opção 1 primeiro.")
                 continue
             salvar_relatorio(resultado)
 
